@@ -6,3 +6,4 @@ development database.
 
 PHP 5.3+ 
 
+Samples: https://github.com/sergey-s/yii-composite-unique-key-validatable/tree/master/tests/unit
