@@ -21,7 +21,7 @@ abstract class AbstractSqliteTestCase extends CDbTestCase {
         if (!self::_isSqliteLoaded()) {
             markTestSkipped('PDO and SQLite extensions are required.');
         }
-        self::_configureApplication();
+        static::_configureApplication();
         static::_setUpDatabase();
     }
 
@@ -35,22 +35,23 @@ abstract class AbstractSqliteTestCase extends CDbTestCase {
             Yii::app()->getDb()->active = false;
         }
     }
-    
+
     /**
-     * Check if SQLite is loaded
-     * @return bool 
+     * Creates needed tables for running tests
      */
-    protected static function _isSqliteLoaded() {
-        return (extension_loaded('pdo') && extension_loaded('pdo_sqlite'));
-    }
+    protected abstract static function _setUpDatabase();
     
     /**
      * Configure application
      * 
      * Sets up in-memory SQLite database connection and sets base path for 
-     * fixtures to "path_to_your_unit_test_class/fixtures" folder
+     * fixtures to "{$path_to_your_unit_test_class}/fixtures" folder
      */
     protected static function _configureApplication() {
+        $testClassReflection = new ReflectionClass(get_called_class());
+        $testClassDir = dirname($testClassReflection->getFileName());
+        $fixturesDir = "$testClassDir/fixtures";
+        
         $config = array(
             'basePath' => dirname(__FILE__),
             'components' => array(
@@ -61,15 +62,18 @@ abstract class AbstractSqliteTestCase extends CDbTestCase {
                 
                 'fixture' => array(
                     'class' => 'system.test.CDbFixtureManager',
-                    'basePath' => dirname(__FILE__) . '/fixtures'
+                    'basePath' => $fixturesDir
                 ),
             )
         );
         Yii::app()->configure($config);
     }
-
+    
     /**
-     * Creates needed tables for running tests
+     * Check if SQLite is loaded
+     * @return bool 
      */
-    protected abstract static function _setUpDatabase();
+    private static function _isSqliteLoaded() {
+        return (extension_loaded('pdo') && extension_loaded('pdo_sqlite'));
+    }
 }
